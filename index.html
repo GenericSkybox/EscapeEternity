@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Escape Eternity</title>
+        <link rel="stylesheet" href="style.css">
+        <link rel="icon" href="resources/infinity.png">
+    </head>
+
+    <body>
+        <div class="panel" id="timePanel">
+            <span id="eventBox">You have infinite time. What will you do with it?</span>
+            <br>
+            <span><span id="time">0</span> seconds left in this universe</span>
+        </div>
+
+        <br>
+
+        <div class="panel" id = "resourcesPanel">
+            <p>Resources:</p>
+            <div class="resourceRow">
+                <p>Thoughts - <span id="thoughts">0</span></p>
+                <p>Ideas - <span id="ideas">0</span></p>
+            </div>
+        </div>
+
+        <br><br>
+
+        <div class="panel" id="actionPanel">
+            <button class="actionButton" id="thinkButton" onclick="game.buyResource('thoughts')">Think: <span id="thoughtsTimeCost"></span> seconds instantly</button>
+            <br>
+            <button class="actionButton" id="ideaButton" onclick="game.buyResource('ideas')">Form Idea: <span id="ideasTimeCost"></span> seconds instantly and <span id="ideasAltCost"></span> thoughts</button>
+        </div>
+
+        <script src="break_infinity.js"></script> 
+        <script src="main.js"></script> 
+    </body>
+</html>
