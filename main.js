@@ -1,9 +1,12 @@
 // consts
+const TIME_COST_RATE = 10;
+const ALT_COST_BASE = 8;
+
 const AUTO_BUY_MULTIPLIER_BASE = 0;
-const AUTO_BUY_MULTIPLIER_RATE = 10;
+const AUTO_BUY_MULTIPLIER_RATE = 8;
+
 const AUTO_BUY_COST_BASE = 10;
 const AUTO_BUY_COST_RATE = 1.2;
-const TIME_COST_RATE = 10;
 // end consts
 
 // functions
@@ -12,7 +15,7 @@ function logbx(b, x) {
 }
 
 function normalize(value, max, min) {
-    return (1-0) / (max-min) * (value-max) + 1
+    return 1 / (max-min) * (value-max) + 1
 }
 // end functions
 
@@ -22,7 +25,7 @@ class Resource {
         this.name = name;
         this.timeCost = timeCost;
         this.altCostName = altCostName;
-        this.altCost = altCostAmount;
+        this.altCost = ALT_COST_BASE * Math.pow(2, resourcePosition) + Math.pow(2, resourcePosition);
         this.amount = amount;
         this.revealed = revealed;
         this.resourcePosition = resourcePosition;
@@ -39,7 +42,9 @@ class Resource {
             this.amount += 1;
 
             game.timeInSeconds -= this.timeCost;
-            this.timeCost = Math.floor(this.timeCost * Math.pow((this.resourcePosition + 1) / 10, normalize(this.amount, Math.pow(TIME_COST_RATE, this.resourcePosition), 0)));
+            this.timeCost = Math.floor(this.timeCost * Math.pow((this.resourcePosition + 1) / 10, 3 + this.resourcePosition));
+
+            //this.timeCost = Math.floor(this.timeCost * Math.pow((this.resourcePosition + 1) / 10, normalize(this.amount, Math.pow(TIME_COST_RATE, this.resourcePosition), 0)));
             //this.timeCost = logbx(this.timeCost, this.amount / 10);
             //this.timeCost = Math.round(this.timeCost / (10 * this.amount * (this.resourcePosition + 1)));
 
@@ -69,11 +74,17 @@ class Resource {
 // variables
 var game = {
     timeInSeconds: Decimal.NUMBER_MAX_VALUE,
+    ticSpeed: 1,
     resources: [
         new Resource("thoughts", new Decimal("1e+308"), "", 0, 0, true, 0),
         new Resource("ideas", new Decimal("2.5e+307"), "thoughts", 10, 0, false, 1),
-        new Resource("postulates", new Decimal("2e+306"), "ideas", 10, 0, false, 2),
-        new Resource("hypotheses", new Decimal("7e+305"), "postulates", 10, 0, false, 3),
+        new Resource("notions", new Decimal("2e+306"), "ideas", 100, 0, false, 2),
+        new Resource("hypotheses", new Decimal("7e+305"), "notions", 1000, 0, false, 3),
+        new Resource("theories", new Decimal("1e+304"), "hypotheses", 10000, 0, false, 4),
+        new Resource("deductions", new Decimal("1e+303"), "theories", 100000, 0, false, 5),
+        new Resource("postulates", new Decimal("1e+304"), "deductions", 1000000, 0, false, 6),
+        new Resource("rules", new Decimal("1e+304"), "postulates", 10000000, 0, false, 7),
+        new Resource("realities", new Decimal("1e+304"), "rules", 100000000, 0, false, 8)
     ],
 
     checkForFeatureUnlock: function() {
@@ -112,7 +123,7 @@ var game = {
     },
 
     updateAllResources: function() {
-        game.timeInSeconds -= 1;
+        game.timeInSeconds -= this.ticSpeed;
         for (i = 0; i < game.resources.length; i++) {
             if (game.resources[i].autoBuyMultiplier > 0) {
                 game.resources[i].amount += Math.pow(AUTO_BUY_MULTIPLIER_RATE, (game.resources[i].autoBuyMultiplier - 1));

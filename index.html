@@ -21,9 +21,12 @@
             <div class="resourceRow">
                 <p>Thoughts - <span id="thoughts">0</span></p>
                 <p>Ideas - <span id="ideas">0</span></p>
-                <p>Postulates - <span id="postulates">0</span></p>
+                <p>Notions - <span id="notions">0</span></p>
                 <p>Hypotheses - <span id="hypotheses">0</span></p>
                 <p>Theories - <span id="theories">0</span></p>
+                <p>Deductions - <span id="deductions">0</span></p>
+                <p>Postulates - <span id="postulates">0</span></p>
+                <p>Rules - <span id="rules">0</span></p>
                 <p>Realities - <span id="realities">0</span></p>
             </div>
         </div>
@@ -31,11 +34,23 @@
         <br><br>
 
         <div class="panel" id="actionPanel">
-            <button class="actionButton" id="thinkButton" onclick="game.buyResource('thoughts')">Think: <span id="thoughtsTimeCost"></span> seconds instantly</button>
+            <button class="actionButton" id="thoughtsButton" onclick="game.buyResource('thoughts')">Think: <span id="thoughtsTimeCost"></span> seconds instantly</button>
             <br>
-            <button class="actionButton" id="ideaButton" onclick="game.buyResource('ideas')">Form Idea: <span id="ideasTimeCost"></span> seconds instantly and <span id="ideasAltCost"></span> thoughts</button>
+            <button class="actionButton" id="ideasButton" onclick="game.buyResource('ideas')">Form Idea: <span id="ideasTimeCost"></span> seconds instantly and <span id="ideasAltCost"></span> thoughts</button>
             <br>
-            <button class="actionButton" id="postulateButton" onclick="game.buyResource('postulates')">Condense Postulate: <span id="postulatesTimeCost"></span> seconds instantly and <span id="postulatesAltCost"></span> ideas</button>
+            <button class="actionButton" id="notionsButton" onclick="game.buyResource('notions')">Condense Notions: <span id="notionsTimeCost"></span> seconds instantly and <span id="notionsAltCost"></span> ideas</button>
+            <br>
+            <button class="actionButton" id="hypothesesButton" onclick="game.buyResource('hypotheses')">Construct Hypothesis: <span id="hypothesesTimeCost"></span> seconds instantly and <span id="hypothesesAltCost"></span> notions</button>
+            <br>
+            <button class="actionButton" id="theoriesButton" onclick="game.buyResource('theories')">Ponder Theory: <span id="theoriesTimeCost"></span> seconds instantly and <span id="theoriesAltCost"></span> hypotheses</button>
+            <br>
+            <button class="actionButton" id="deductionsButton" onclick="game.buyResource('deductions')">Determine Deduction: <span id="deductionsTimeCost"></span> seconds instantly and <span id="deductionsAltCost"></span> theories</button>
+            <br>
+            <button class="actionButton" id="postulatesButton" onclick="game.buyResource('postulates')">Build Postulate: <span id="postulatesTimeCost"></span> seconds instantly and <span id="postulatesAltCost"></span> deductions</button>
+            <br>
+            <button class="actionButton" id="rulesButton" onclick="game.buyResource('rules')">Solidify Rule: <span id="rulesTimeCost"></span> seconds instantly and <span id="rulesAltCost"></span> postulates</button>
+            <br>
+            <button class="actionButton" id="realitiesButton" onclick="game.buyResource('realities')">Shape Reality: <span id="realitiesTimeCost"></span> seconds instantly and <span id="realitiesAltCost"></span> postulates</button>
         </div>
 
         <br><br>
@@ -45,7 +60,9 @@
             <br>
             <button class="actionButton" id="ideasUpgrade" onclick="game.upgradeResource('ideas')">Form Better [costs <span id="ideasUpgradeCost"></span> ideas to form ideas 10x as fast]</button>
             <br>
-            <button class="actionButton" id="postulatesUpgrade" onclick="game.upgradeResource('postulates')">Condense Faster [costs <span id="postulatesUpgradeCost"></span> postulates to condense postulates 10x as fast]</button>
+            <button class="actionButton" id="notionsUpgrade" onclick="game.upgradeResource('notions')">Condense Faster [costs <span id="notionsUpgradeCost"></span> notions to condense notions 10x as fast]</button>
+            <br>
+            <button class="actionButton" id="hypothesesUpgrade" onclick="game.upgradeResource('hypotheses')">Construct Stronger [costs <span id="hypothesesUpgradeCost"></span> hypotheses to condense hypotheses 10x as fast]</button>
         </div>
 
         <script src="break_infinity.js"></script> 
