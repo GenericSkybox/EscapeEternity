@@ -8,7 +8,7 @@ const AUTO_BUY_MULTIPLIER_BASE = 0;
 const AUTO_BUY_MULTIPLIER_RATE = 8;
 
 const AUTO_BUY_COST_BASE = 10;
-const AUTO_BUY_COST_RATE = 1.2;
+const AUTO_BUY_COST_RATE = 1.05;
 // end consts
 
 // functions
@@ -23,40 +23,71 @@ function normalize(value, max, min) {
 
 // classes
 class Resource {
-    constructor(name, timeCost, altCostName, altCostAmount, amount, revealed, resourcePosition) {
+    constructor(name, timeCost, altCostName, altCostAmount, amount, revealed, position) {
         this.name = name;
-        this.timeCost = STARTING_AMOUNT / Math.pow(10, resourcePosition);
-        this.altCostName = altCostName;
-        this.altCost = ALT_COST_BASE * Math.pow(2, resourcePosition) + Math.pow(2, resourcePosition);
         this.amount = amount;
         this.revealed = revealed;
-        this.resourcePosition = resourcePosition;
+        
+        this.position = position;
+        this.resetCounter = 0;
+
+        this.timeCost = this.calculateTimeCostBase();
+
+        this.resourceCostName = altCostName;
 
         this.autoBuyMultiplier = AUTO_BUY_MULTIPLIER_BASE;
         this.autoBuyCost = AUTO_BUY_COST_BASE;
+    }
+
+    calculateTimeCostBase() {
+        return STARTING_AMOUNT / Math.pow(10, this.position + this.resetCounter);
+    }
+
+    getResourceCost() {
+        if (this.position !== 0) {
+            return ALT_COST_BASE * Math.pow(2, this.position + this.resetCounter);
+        }
+        else {
+            return ALT_COST_BASE * Math.pow(2, this.position);
+        }
+    }
+
+    getResetMultiplier() {
+        return (10 - this.resetCounter) / 10;
+    }
+
+    getTimeCostMin() {
+        return Math.pow(2, (this.position + 1) * (this.resetCounter + 1));
     }
 
     buy(altAmount) {
         if (this.timeCost >= game.timeInSeconds) {
             game.endGame();
         }
-        else if (this.altCost <= altAmount || altAmount == -1) {
+        else if (this.getResourceCost() <= altAmount || altAmount == -1) {
             this.amount += 1;
 
             game.timeInSeconds -= this.timeCost;
-            this.timeCost = Math.floor(this.timeCost * Math.pow((this.resourcePosition + 1) / 10, 3 + this.resourcePosition));
+
+            if (this.timeCost > this.getTimeCostMin()) {
+                this.timeCost = Math.floor(this.timeCost / Math.pow(10, this.getResetMultiplier() * (game.resources.length - this.position)));
+
+                if (this.timeCost <= this.getTimeCostMin()) {
+                    this.timeCost = this.getTimeCostMin();
+                    display.updateEventBox('autobuy', this.name);
+                    this.autoBuyMultiplier = 1;
+                }
+            }
+            //this.timeCost = Math.floor(this.timeCostBase / Math.pow(Math.pow(10, game.resources.length - this.resourcePosition), this.amount));
+            //this.timeCost = Math.floor(-this.timeCostBase * Math.pow(this.resourcePosition + 1, this.amount) + this.timeCostBase);
+            //this.timeCost = Math.floor(this.timeCost * Math.pow((this.resourcePosition + 1) / 10, 3 + this.resourcePosition));
 
             //this.timeCost = Math.floor(this.timeCost * Math.pow((this.resourcePosition + 1) / 10, normalize(this.amount, Math.pow(TIME_COST_RATE, this.resourcePosition), 0)));
             //this.timeCost = logbx(this.timeCost, this.amount / 10);
             //this.timeCost = Math.round(this.timeCost / (10 * this.amount * (this.resourcePosition + 1)));
 
-            if (this.autoBuyMultiplier == 0 && this.timeCost == 0) {
-                display.updateEventBox('autobuy', this.name);
-                this.autoBuyMultiplier = 1;
-            }
-
             if (altAmount !== -1) {
-                altAmount -= this.altCost;
+                altAmount -= this.getResourceCost();
             }
         }
 
@@ -68,6 +99,13 @@ class Resource {
             this.amount -= this.autoBuyCost;
             this.autoBuyMultiplier += 1;
             this.autoBuyCost *= Math.round(this.autoBuyMultiplier * AUTO_BUY_COST_RATE) * 10;
+        }
+    }
+
+    reset() {
+        if (this.resetCounter < 9) {
+            this.resetCounter++;
+            this.timeCost = this.calculateTimeCostBase();
         }
     }
 }
@@ -95,9 +133,9 @@ var game = {
 
     buyResource: function(name) {
         for (i = 0; i < this.resources.length; i++) {
-            if (this.resources[i].name == name && this.resources[i].altCostName !== "") {
+            if (this.resources[i].name == name && this.resources[i].resourceCostName !== "") {
                 for (j = 0; j < this.resources.length; j++) {
-                    if (this.resources[j].name == this.resources[i].altCostName) {
+                    if (this.resources[j].name == this.resources[i].resourceCostName) {
                         var altAmount = this.resources[i].buy(this.resources[j].amount);
                         this.resources[j].amount = altAmount;
 
@@ -129,6 +167,7 @@ var game = {
         for (i = 0; i < game.resources.length; i++) {
             if (game.resources[i].autoBuyMultiplier > 0) {
                 game.resources[i].amount += Math.pow(AUTO_BUY_MULTIPLIER_RATE, (game.resources[i].autoBuyMultiplier - 1));
+                game.timeInSeconds -= game.resources[i].getTimeCostMin();
             }
         }
     },
@@ -153,7 +192,7 @@ var display = {
             }
 
             if (document.getElementById(game.resources[i].name+'AltCost') !== null) {
-                document.getElementById(game.resources[i].name+'AltCost').innerHTML = game.resources[i].altCost;
+                document.getElementById(game.resources[i].name+'AltCost').innerHTML = game.resources[i].getResourceCost();
             }
 
             if (document.getElementById(game.resources[i].name+'UpgradeCost') !== null) {
