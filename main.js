@@ -1,4 +1,6 @@
 // consts
+const STARTING_AMOUNT = new Decimal("1e+308")
+
 const TIME_COST_RATE = 10;
 const ALT_COST_BASE = 8;
 
@@ -23,7 +25,7 @@ function normalize(value, max, min) {
 class Resource {
     constructor(name, timeCost, altCostName, altCostAmount, amount, revealed, resourcePosition) {
         this.name = name;
-        this.timeCost = timeCost;
+        this.timeCost = STARTING_AMOUNT / Math.pow(10, resourcePosition);
         this.altCostName = altCostName;
         this.altCost = ALT_COST_BASE * Math.pow(2, resourcePosition) + Math.pow(2, resourcePosition);
         this.amount = amount;
