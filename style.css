@@ -3,3 +3,39 @@
     margin: 0px;
 }
 
+#gameWindow {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: 50px 1fr;
+}
+
+.section {
+    padding: 10px;
+    background-color: #b3b3b3;
+}
+
+#topSection {
+    grid-column: 1 / 4;
+    grid-row: 1;
+}
+
+#leftSection {
+    grid-column: 1;
+    grid-row: 2;
+}
+
+#middleSection {
+    grid-column: 2;
+    grid-row: 2;
+}
+
+#rightSection {
+    grid-column: 3;
+    grid-row: 2;
+}
+
+.panel {
+    background-color: #a3a3a3;
+    padding: 6px;
+    border-radius: 2px;
+}
