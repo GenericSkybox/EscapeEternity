@@ -1,31 +1,20 @@
 // consts
 const STARTING_AMOUNT = new Decimal("1e+308")
 
-const TIME_COST_RATE = 10;
-const ALT_COST_BASE = 8;
+const ALT_COST_BASE = 2;
 
-const AUTO_BUY_MULTIPLIER_BASE = 0;
-const AUTO_BUY_MULTIPLIER_RATE = 8;
-
-const AUTO_BUY_COST_BASE = 10;
-const AUTO_BUY_COST_RATE = 1.05;
+const AUTO_BUYER_COST_BASE = 10;
+const AUTO_BUYER_COST_RATE = 1.1;
 // end consts
 
 // functions
-function logbx(b, x) {
-    return Math.log(b) / Math.log(x);
-}
-
-function normalize(value, max, min) {
-    return 1 / (max-min) * (value-max) + 1
-}
 // end functions
 
 // classes
 class Resource {
-    constructor(name, timeCost, altCostName, altCostAmount, amount, revealed, position) {
+    constructor(name, revealed, position) {
         this.name = name;
-        this.amount = amount;
+        this.amount = 0;
         this.revealed = revealed;
         
         this.position = position;
@@ -33,10 +22,9 @@ class Resource {
 
         this.timeCost = this.calculateTimeCostBase();
 
-        this.resourceCostName = altCostName;
-
-        this.autoBuyMultiplier = AUTO_BUY_MULTIPLIER_BASE;
-        this.autoBuyCost = AUTO_BUY_COST_BASE;
+        this.autoBuyersToggle = false;
+        this.autoBuyers = 0;
+        this.autoBuyerCost = AUTO_BUYER_COST_BASE;
     }
 
     calculateTimeCostBase() {
@@ -45,10 +33,10 @@ class Resource {
 
     getResourceCost() {
         if (this.position !== 0) {
-            return ALT_COST_BASE * Math.pow(2, this.position + this.resetCounter);
+            return Math.pow(ALT_COST_BASE, this.position + this.resetCounter);
         }
         else {
-            return ALT_COST_BASE * Math.pow(2, this.position);
+            return Math.pow(ALT_COST_BASE, this.position);
         }
     }
 
@@ -60,11 +48,19 @@ class Resource {
         return Math.pow(2, (this.position + 1) * (this.resetCounter + 1));
     }
 
-    buy(altAmount) {
+    getAutoBuyerMultiplier() {
+        return 1;
+    }
+
+    getResourceCostPerAutoBuy() {
+        return this.getResourceCost() * this.autoBuyers * this.getAutoBuyerMultiplier();
+    }
+
+    buy() {
         if (this.timeCost >= game.timeInSeconds) {
             game.endGame();
         }
-        else if (this.getResourceCost() <= altAmount || altAmount == -1) {
+        else if (this.position == 0 || this.getResourceCost() <= game.resources[this.position-1].amount) {
             this.amount += 1;
 
             game.timeInSeconds -= this.timeCost;
@@ -75,30 +71,22 @@ class Resource {
                 if (this.timeCost <= this.getTimeCostMin()) {
                     this.timeCost = this.getTimeCostMin();
                     display.updateEventBox('autobuy', this.name);
-                    this.autoBuyMultiplier = 1;
+                    this.autoBuyers = 1;
+                    this.autoBuyersToggle = true;
                 }
             }
-            //this.timeCost = Math.floor(this.timeCostBase / Math.pow(Math.pow(10, game.resources.length - this.resourcePosition), this.amount));
-            //this.timeCost = Math.floor(-this.timeCostBase * Math.pow(this.resourcePosition + 1, this.amount) + this.timeCostBase);
-            //this.timeCost = Math.floor(this.timeCost * Math.pow((this.resourcePosition + 1) / 10, 3 + this.resourcePosition));
 
-            //this.timeCost = Math.floor(this.timeCost * Math.pow((this.resourcePosition + 1) / 10, normalize(this.amount, Math.pow(TIME_COST_RATE, this.resourcePosition), 0)));
-            //this.timeCost = logbx(this.timeCost, this.amount / 10);
-            //this.timeCost = Math.round(this.timeCost / (10 * this.amount * (this.resourcePosition + 1)));
-
-            if (altAmount !== -1) {
-                altAmount -= this.getResourceCost();
+            if (this.position > 0) {
+                game.resources[this.position-1].amount -= this.getResourceCost();
             }
         }
-
-        return altAmount;
     }
 
     upgrade() {
-        if (this.autoBuyCost <= this.amount && this.autoBuyMultiplier > 0) {
-            this.amount -= this.autoBuyCost;
-            this.autoBuyMultiplier += 1;
-            this.autoBuyCost *= Math.round(this.autoBuyMultiplier * AUTO_BUY_COST_RATE) * 10;
+        if (this.amount >= this.autoBuyerCost && this.autoBuyers > 0) {
+            this.amount -= this.autoBuyerCost;
+            this.autoBuyers += 1;
+            this.autoBuyerCost = Math.round(this.autoBuyerCost * AUTO_BUYER_COST_RATE);
         }
     }
 
@@ -116,36 +104,21 @@ var game = {
     timeInSeconds: Decimal.NUMBER_MAX_VALUE,
     ticSpeed: 1,
     resources: [
-        new Resource("thoughts", new Decimal("1e+308"), "", 0, 0, true, 0),
-        new Resource("ideas", new Decimal("2.5e+307"), "thoughts", 10, 0, false, 1),
-        new Resource("notions", new Decimal("2e+306"), "ideas", 100, 0, false, 2),
-        new Resource("hypotheses", new Decimal("7e+305"), "notions", 1000, 0, false, 3),
-        new Resource("theories", new Decimal("1e+304"), "hypotheses", 10000, 0, false, 4),
-        new Resource("deductions", new Decimal("1e+303"), "theories", 100000, 0, false, 5),
-        new Resource("postulates", new Decimal("1e+304"), "deductions", 1000000, 0, false, 6),
-        new Resource("rules", new Decimal("1e+304"), "postulates", 10000000, 0, false, 7),
-        new Resource("realities", new Decimal("1e+304"), "rules", 100000000, 0, false, 8)
+        new Resource("thoughts", true, 0),
+        new Resource("ideas", false, 1),
+        new Resource("notions", false, 2),
+        new Resource("hypotheses", false, 3),
+        new Resource("theories", false, 4),
+        new Resource("deductions", false, 5),
+        new Resource("postulates", false, 6),
+        new Resource("rules", false, 7),
+        new Resource("realities", false, 8)
     ],
-
-    checkForFeatureUnlock: function() {
-
-    },
 
     buyResource: function(name) {
         for (i = 0; i < this.resources.length; i++) {
-            if (this.resources[i].name == name && this.resources[i].resourceCostName !== "") {
-                for (j = 0; j < this.resources.length; j++) {
-                    if (this.resources[j].name == this.resources[i].resourceCostName) {
-                        var altAmount = this.resources[i].buy(this.resources[j].amount);
-                        this.resources[j].amount = altAmount;
-
-                        display.updateAllUI();
-                        return;
-                    }
-                }
-            }
-            else if (this.resources[i].name == name) {
-                this.resources[i].buy(-1);
+            if (this.resources[i].name == name) {
+                this.resources[i].buy();
                 display.updateAllUI();
                 return;
             }
@@ -165,8 +138,15 @@ var game = {
     updateAllResources: function() {
         game.timeInSeconds -= this.ticSpeed;
         for (i = 0; i < game.resources.length; i++) {
-            if (game.resources[i].autoBuyMultiplier > 0) {
-                game.resources[i].amount += Math.pow(AUTO_BUY_MULTIPLIER_RATE, (game.resources[i].autoBuyMultiplier - 1));
+            if (game.resources[i].autoBuyers > 0 && game.resources[i].autoBuyersToggle && i !== 0) {
+                if (game.resources[i-1].amount >= game.resources[i].getResourceCostPerAutoBuy()) {
+                    game.resources[i].amount += (game.resources[i].autoBuyers * game.resources[i].getAutoBuyerMultiplier());
+                    game.timeInSeconds -= game.resources[i].getTimeCostMin();
+                    game.resources[i-1].amount -= game.resources[i].getResourceCostPerAutoBuy();
+                }
+            }
+            else if (game.resources[i].autoBuyers > 0 && game.resources[i].autoBuyersToggle) {
+                game.resources[i].amount += (game.resources[i].autoBuyers * game.resources[i].getAutoBuyerMultiplier());
                 game.timeInSeconds -= game.resources[i].getTimeCostMin();
             }
         }
@@ -196,7 +176,11 @@ var display = {
             }
 
             if (document.getElementById(game.resources[i].name+'UpgradeCost') !== null) {
-                document.getElementById(game.resources[i].name+'UpgradeCost').innerHTML = game.resources[i].autoBuyCost;
+                document.getElementById(game.resources[i].name+'UpgradeCost').innerHTML = game.resources[i].autoBuyerCost;
+            }
+
+            if (document.getElementById(game.resources[i].name+'UpgradeMultiplier') !== null) {
+                document.getElementById(game.resources[i].name+'UpgradeMultiplier').innerHTML = ((game.resources[i].autoBuyers + 1) * game.resources[i].getAutoBuyerMultiplier());
             }
         }
     },
