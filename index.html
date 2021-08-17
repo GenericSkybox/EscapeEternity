@@ -21,6 +21,10 @@
             <div class="resourceRow">
                 <p>Thoughts - <span id="thoughts">0</span></p>
                 <p>Ideas - <span id="ideas">0</span></p>
+                <p>Postulates - <span id="postulates">0</span></p>
+                <p>Hypotheses - <span id="hypotheses">0</span></p>
+                <p>Theories - <span id="theories">0</span></p>
+                <p>Realities - <span id="realities">0</span></p>
             </div>
         </div>
 
@@ -30,6 +34,18 @@
             <button class="actionButton" id="thinkButton" onclick="game.buyResource('thoughts')">Think: <span id="thoughtsTimeCost"></span> seconds instantly</button>
             <br>
             <button class="actionButton" id="ideaButton" onclick="game.buyResource('ideas')">Form Idea: <span id="ideasTimeCost"></span> seconds instantly and <span id="ideasAltCost"></span> thoughts</button>
+            <br>
+            <button class="actionButton" id="postulateButton" onclick="game.buyResource('postulates')">Condense Postulate: <span id="postulatesTimeCost"></span> seconds instantly and <span id="postulatesAltCost"></span> ideas</button>
+        </div>
+
+        <br><br>
+
+        <div class="panel" id="upgradePanel">
+            <button class="actionButton" id="thoughtsUpgrade" onclick="game.upgradeResource('thoughts')">Think Harder [costs <span id="thoughtsUpgradeCost"></span> thoughts to think 10x as fast]</button>
+            <br>
+            <button class="actionButton" id="ideasUpgrade" onclick="game.upgradeResource('ideas')">Form Better [costs <span id="ideasUpgradeCost"></span> ideas to form ideas 10x as fast]</button>
+            <br>
+            <button class="actionButton" id="postulatesUpgrade" onclick="game.upgradeResource('postulates')">Condense Faster [costs <span id="postulatesUpgradeCost"></span> postulates to condense postulates 10x as fast]</button>
         </div>
 
         <script src="break_infinity.js"></script> 
